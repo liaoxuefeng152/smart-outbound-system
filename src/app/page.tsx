@@ -1,157 +1,164 @@
-import DashboardLayout from '@/components/dashboard-layout';
-import { TrendingUp, PieChart, Phone, CheckCircle, Target, Activity, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import DashboardLayout from "@/components/dashboard-layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Phone, CheckCircle, Target, TrendingUp, LineChart, PieChart } from "lucide-react";
+
+export default function DashboardPage() {
+  const [timeRange, setTimeRange] = useState("今日");
+
   return (
     <DashboardLayout>
-      <div className="p-6 space-y-4">
-        {/* 顶部筛选栏 */}
-        <div className="bg-white rounded-lg shadow p-4">
+      <div className="p-6">
+        {/* 时间筛选栏 */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-700">时间维度：</span>
-              <div className="flex space-x-2">
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium">
-                  今日
-                </button>
-                <button className="px-4 py-2 bg-white text-gray-700 border rounded-md text-sm font-medium hover:bg-gray-50">
-                  昨日
-                </button>
-                <button className="px-4 py-2 bg-white text-gray-700 border rounded-md text-sm font-medium hover:bg-gray-50">
-                  近7天
-                </button>
-                <button className="px-4 py-2 bg-white text-gray-700 border rounded-md text-sm font-medium hover:bg-gray-50">
-                  近30天
-                </button>
-                <button className="px-4 py-2 bg-white text-gray-700 border rounded-md text-sm font-medium hover:bg-gray-50">
-                  自定义
-                </button>
-              </div>
+              {["今日", "昨日", "近7天", "近30天", "自定义"].map((range) => (
+                <Button
+                  key={range}
+                  variant={timeRange === range ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTimeRange(range)}
+                >
+                  {range}
+                </Button>
+              ))}
             </div>
-            <Link
-              href="/tasks/create"
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-            >
+            <Button className="bg-blue-600 hover:bg-blue-700">
               创建任务
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            </Button>
           </div>
         </div>
 
-        {/* 数据卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">累计外呼总量</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0</p>
-                <p className="text-xs text-gray-400 mt-1">较昨日 +0</p>
+        {/* 数据统计卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* 累计外呼总量 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-600 mb-1">累计外呼总量</div>
+                  <div className="text-2xl font-bold text-gray-900">0</div>
+                  <div className="text-xs text-gray-500 mt-1">较昨日 +0</div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-blue-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Phone className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">接通量 & 接通率</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0 / 0%</p>
-                <p className="text-xs text-gray-400 mt-1">较昨日 +0</p>
+          {/* 接通量 & 接通率 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-600 mb-1">接通量 & 接通率</div>
+                  <div className="text-2xl font-bold text-gray-900">0 / 0%</div>
+                  <div className="text-xs text-gray-500 mt-1">较昨日 +0</div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">有效意向客户</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0 / 0%</p>
-                <p className="text-xs text-gray-400 mt-1">较昨日 +0</p>
+          {/* 有效意向客户 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-600 mb-1">有效意向客户</div>
+                  <div className="text-2xl font-bold text-gray-900">0 / 0%</div>
+                  <div className="text-xs text-gray-500 mt-1">较昨日 +0</div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <Target className="w-5 h-5 text-orange-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Target className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">今日进行中任务</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">0</p>
-                <p className="text-xs text-gray-400 mt-1">待启动任务 0</p>
+          {/* 今日进行中任务 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-600 mb-1">今日进行中任务</div>
+                  <div className="text-2xl font-bold text-gray-900">0</div>
+                  <div className="text-xs text-gray-500 mt-1">待启动任务 0</div>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Activity className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* 图表模块 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900">外呼趋势折线图</h2>
-              <TrendingUp className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="h-40 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-center">
-                <p className="text-sm font-medium text-gray-500">暂无数据</p>
-                <p className="text-xs text-gray-400 mt-1">创建任务后即可查看趋势</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          {/* 外呼趋势折线图 */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">外呼趋势</CardTitle>
+                <LineChart className="w-5 h-5 text-gray-400" />
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent className="h-48">
+              <div className="h-full flex items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <LineChart className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">暂无数据</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900">客户意向分布饼图</h2>
-              <PieChart className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="h-40 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-center">
-                <p className="text-sm font-medium text-gray-500">暂无数据</p>
-                <p className="text-xs text-gray-400 mt-1">任务完成后自动统计</p>
+          {/* 客户意向分布饼图 */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold">客户意向分布</CardTitle>
+                <PieChart className="w-5 h-5 text-gray-400" />
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent className="h-48">
+              <div className="h-full flex items-center justify-center text-gray-400">
+                <div className="text-center">
+                  <PieChart className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">暂无数据</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* 最近外呼任务记录 */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b border-gray-200">
+        <Card>
+          <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">最近外呼任务记录</h2>
-              <Link
-                href="/tasks"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                查看全部 →
-              </Link>
+              <CardTitle className="text-base font-semibold">最近外呼任务</CardTitle>
+              <Button variant="link" className="text-blue-600">
+                查看全部
+              </Button>
             </div>
-          </div>
-          <div className="p-6">
-            <div className="text-center py-6">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Phone className="h-8 w-8 text-gray-400" />
-              </div>
-              <p className="text-sm font-medium text-gray-500 mb-2">暂无外呼任务记录</p>
-              <p className="text-xs text-gray-400 mb-3">创建任务后即可在此查看执行进度</p>
-              <Link
-                href="/tasks/create"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                立即创建任务
-              </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-400">
+              <div className="text-sm mb-3">暂无外呼任务记录</div>
+              <Button variant="outline" className="text-blue-600">
+                创建第一个任务
+              </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

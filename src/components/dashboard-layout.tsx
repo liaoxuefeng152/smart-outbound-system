@@ -1,82 +1,60 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { getSupabaseBrowserClientWithRetry } from '@/lib/supabase-browser';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { useSupabaseConfig } from "@/lib/supabase-config-inject";
 import {
   LayoutDashboard,
   Phone,
   Users,
   MessageSquare,
+  FileText,
   BarChart3,
   Settings,
-  Menu,
-  X,
-  LogOut,
   ChevronDown,
   ChevronRight,
-} from 'lucide-react';
+  LogOut,
+  User,
+} from "lucide-react";
+import type { User as SupabaseUser, AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 interface NavItem {
-  title: string;
-  icon: React.ReactNode;
+  name: string;
+  icon: React.ElementType;
   href?: string;
-  children?: NavItem[];
+  children?: { name: string; href: string }[];
 }
 
 const navItems: NavItem[] = [
+  { name: "工作台", icon: LayoutDashboard, href: "/" },
   {
-    title: '工作台',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    href: '/',
-  },
-  {
-    title: '外呼任务',
-    icon: <Phone className="h-5 w-5" />,
+    name: "外呼任务",
+    icon: Phone,
     children: [
-      { title: '任务列表', icon: <ChevronRight className="h-4 w-4" />, href: '/tasks' },
-      { title: '创建任务', icon: <ChevronRight className="h-4 w-4" />, href: '/tasks/create' },
+      { name: "任务列表", href: "/tasks" },
+      { name: "创建任务", href: "/tasks/create" },
     ],
   },
   {
-    title: '号码管理',
-    icon: <Users className="h-5 w-5" />,
+    name: "号码管理",
+    icon: Users,
     children: [
-      { title: '号码库', icon: <ChevronRight className="h-4 w-4" />, href: '/customers' },
-      { title: '黑名单', icon: <ChevronRight className="h-4 w-4" />, href: '/blacklist' },
+      { name: "号码库", href: "/customers" },
+      { name: "黑名单", href: "/blacklist" },
     ],
   },
+  { name: "话术场景", icon: MessageSquare, href: "/scenarios" },
+  { name: "通话记录", icon: FileText, href: "/records" },
+  { name: "数据报表", icon: BarChart3, href: "/reports" },
   {
-    title: '话术场景',
-    icon: <MessageSquare className="h-5 w-5" />,
-    href: '/scenarios',
-  },
-  {
-    title: '通话记录',
-    icon: <Phone className="h-5 w-5" />,
-    href: '/records',
-  },
-  {
-    title: '数据报表',
-    icon: <BarChart3 className="h-5 w-5" />,
-    href: '/reports',
-  },
-  {
-    title: '系统配置',
-    icon: <Settings className="h-5 w-5" />,
+    name: "系统配置",
+    icon: Settings,
     children: [
-      { title: '阿里云配置', icon: <ChevronRight className="h-4 w-4" />, href: '/config/aliyun' },
-      { title: '账号管理', icon: <ChevronRight className="h-4 w-4" />, href: '/config/accounts' },
-      { title: '操作日志', icon: <ChevronRight className="h-4 w-4" />, href: '/config/logs' },
+      { name: "阿里云配置", href: "/config/aliyun" },
+      { name: "账号管理", href: "/config/accounts" },
+      { name: "操作日志", href: "/config/logs" },
     ],
   },
 ];
@@ -88,276 +66,181 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const [user, setUser] = useState<{ email: string } | null>(null);
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const { config, isLoading } = useSupabaseConfig();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const supabase = await getSupabaseBrowserClientWithRetry();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser({ email: user.email || '' });
-        }
-      } catch (err) {
-        console.error('获取用户信息失败:', err);
-      }
-    };
+    // Wait for config to be ready
+    if (isLoading || !config) return;
+
+    const supabase = getSupabaseBrowserClient();
     
-    fetchUser();
-  }, []);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push("/login");
+      } else {
+        setUser(user);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      if (!session?.user) {
+        router.push("/login");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router, config, isLoading]);
 
   const handleLogout = async () => {
-    try {
-      const supabase = await getSupabaseBrowserClientWithRetry();
-      await supabase.auth.signOut();
-      router.push('/login');
-    } catch (err) {
-      console.error('登出失败:', err);
-    }
+    if (!config) return;
+    
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
-  const toggleExpanded = (title: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(title)
-        ? prev.filter((item) => item !== title)
-        : [...prev, title]
+  const toggleMenu = (name: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(name) ? prev.filter((m) => m !== name) : [...prev, name]
     );
   };
 
-  const isLoginPage = pathname === '/login' || pathname === '/register';
+  const isMenuActive = (item: NavItem): boolean => {
+    if (item.href === pathname) return true;
+    if (item.children) {
+      return item.children.some((child) => child.href === pathname);
+    }
+    return false;
+  };
 
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
+  const isChildActive = (child: { href: string }): boolean => {
+    return child.href === pathname;
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
-      <div
-        className={`fixed inset-0 z-40 lg:hidden ${
-          sidebarOpen ? 'block' : 'hidden'
-        }`}
-      >
-        <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75"
-          onClick={() => setSidebarOpen(false)}
-        />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex items-center justify-between h-16 px-4 border-b">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">智</span>
-              </div>
-              <span className="ml-2 text-lg font-semibold">智能推销外呼系统</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
-              <X className="h-4 w-4" />
-            </Button>
+    <div className="flex h-screen overflow-hidden">
+      {/* 左侧导航栏 */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* 系统标识 */}
+        <div className="h-16 flex items-center px-6 border-b border-gray-200">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+            智
           </div>
-          <nav className="flex-1 px-3 py-4 space-y-2">
-            {navItems.map((item) => (
-              <div key={item.title}>
-                {item.children ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-10 px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => toggleExpanded(item.title)}
-                  >
-                    <span className="mr-3 text-gray-500">{item.icon}</span>
-                    <span>{item.title}</span>
-                    <ChevronDown
-                      className={`ml-auto h-4 w-4 text-gray-400 ${
-                        expandedItems.includes(item.title) ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </Button>
-                ) : (
-                  <Button
-                    variant={pathname === item.href ? 'secondary' : 'ghost'}
-                    className={`w-full justify-start h-10 px-3 text-sm font-medium ${
-                      pathname === item.href 
-                        ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+          <div className="ml-3">
+            <div className="font-semibold text-gray-900">智能推销外呼</div>
+            <div className="text-xs text-gray-500">高效触达·智能筛选</div>
+          </div>
+        </div>
+
+        {/* 导航菜单 */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = isMenuActive(item);
+            const isExpanded = expandedMenus.includes(item.name);
+
+            return (
+              <div key={item.name}>
+                {/* 主菜单项 */}
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    className={`flex items-center px-6 py-2.5 mx-2 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700 hover:bg-gray-50"
                     }`}
-                    onClick={() => {
-                      if (item.href) router.push(item.href);
-                      setSidebarOpen(false);
-                    }}
                   >
-                    <span className={`mr-3 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
-                      {item.icon}
-                    </span>
-                    <span>{item.title}</span>
-                  </Button>
-                )}
-                {item.children && expandedItems.includes(item.title) && (
-                  <div className="ml-3 mt-1 space-y-1 pl-6 border-l border-gray-200">
-                    {item.children.map((child) => (
-                      <Button
-                        key={child.title}
-                        variant={pathname === child.href ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className={`w-full justify-start h-8 px-3 text-xs font-medium ${
-                          pathname === child.href 
-                            ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    <Icon className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-gray-500"}`} />
+                    <span className="ml-3 font-medium">{item.name}</span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => toggleMenu(item.name)}
+                    className={`w-full flex items-center px-6 py-2.5 mx-2 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-gray-500"}`} />
+                    <span className="ml-3 font-medium">{item.name}</span>
+                    {item.children && (
+                      <ChevronDown
+                        className={`ml-auto w-4 h-4 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
                         }`}
-                        onClick={() => {
-                          if (child.href) router.push(child.href);
-                          setSidebarOpen(false);
-                        }}
+                      />
+                    )}
+                  </button>
+                )}
+
+                {/* 子菜单 */}
+                {item.children && isExpanded && (
+                  <div className="ml-2 mt-1 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`flex items-center pl-14 pr-6 py-2 rounded-lg transition-colors ${
+                          isChildActive(child)
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
                       >
-                        <span className={`mr-2 ${pathname === child.href ? 'text-blue-600' : 'text-gray-400'}`}>
-                          {child.icon}
-                        </span>
-                        <span>{child.title}</span>
-                      </Button>
+                        <span className="font-medium">{child.name}</span>
+                      </Link>
                     ))}
                   </div>
                 )}
               </div>
-            ))}
-          </nav>
-        </div>
-      </div>
+            );
+          })}
+        </nav>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:flex lg:flex-shrink-0">
-        <div className="w-64 flex flex-col bg-white border-r">
-          <div className="h-16 flex items-center px-4 border-b">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">智</span>
-              </div>
-              <span className="ml-2 text-lg font-semibold">智能推销外呼系统</span>
-            </div>
-          </div>
-          <nav className="flex-1 px-3 py-4 space-y-2">
-            {navItems.map((item) => (
-              <div key={item.title}>
-                {item.children ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-10 px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => toggleExpanded(item.title)}
-                  >
-                    <span className="mr-3 text-gray-500">{item.icon}</span>
-                    <span>{item.title}</span>
-                    <ChevronDown
-                      className={`ml-auto h-4 w-4 text-gray-400 ${
-                        expandedItems.includes(item.title) ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </Button>
-                ) : (
-                  <Button
-                    variant={pathname === item.href ? 'secondary' : 'ghost'}
-                    className={`w-full justify-start h-10 px-3 text-sm font-medium ${
-                      pathname === item.href 
-                        ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                    onClick={() => {
-                      if (item.href) router.push(item.href);
-                    }}
-                  >
-                    <span className={`mr-3 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
-                      {item.icon}
-                    </span>
-                    <span>{item.title}</span>
-                  </Button>
-                )}
-                {item.children && expandedItems.includes(item.title) && (
-                  <div className="ml-3 mt-1 space-y-1 pl-6 border-l border-gray-200">
-                    {item.children.map((child) => (
-                      <Button
-                        key={child.title}
-                        variant={pathname === child.href ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className={`w-full justify-start h-8 px-3 text-xs font-medium ${
-                          pathname === child.href 
-                            ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                        onClick={() => {
-                          if (child.href) router.push(child.href);
-                        }}
-                      >
-                        <span className={`mr-2 ${pathname === child.href ? 'text-blue-600' : 'text-gray-400'}`}>
-                          {child.icon}
-                        </span>
-                        <span>{child.title}</span>
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64 flex flex-col flex-1">
-        {/* Top bar */}
-        <header className="sticky top-0 z-10 flex h-14 flex-shrink-0 bg-white border-b shadow-sm items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
+        {/* 底部登出按钮 */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            <Menu className="h-4 w-4" />
-          </Button>
+            <LogOut className="w-5 h-5 text-gray-500" />
+            <span className="ml-3 font-medium">退出登录</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* 右侧主内容区 */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* 顶部用户栏 */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+          <div className="text-sm text-gray-600">
+            欢迎使用智能推销外呼系统
+          </div>
           {user && (
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-purple-600 text-sm font-medium">
-                  {user.email?.charAt(0).toUpperCase()}
-                </span>
+            <div className="flex items-center gap-3">
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">{user.email}</div>
+                <div className="text-gray-500 text-xs">管理员</div>
               </div>
-              <div className="hidden lg:block">
-                <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                <p className="text-xs text-gray-500">管理员</p>
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowLogoutDialog(true)}
-                title="退出登录"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
             </div>
           )}
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
+        {/* 主内容区 */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          {children}
+        </main>
       </div>
-
-      {/* Logout dialog */}
-      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>确认登出</DialogTitle>
-            <DialogDescription>
-              您确定要退出登录吗？
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLogoutDialog(false)}>
-              取消
-            </Button>
-            <Button onClick={handleLogout}>
-              确认登出
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
