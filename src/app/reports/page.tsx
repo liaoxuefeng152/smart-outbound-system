@@ -3,7 +3,7 @@ import DashboardLayout from '@/components/dashboard-layout';
 export default function ReportsPage() {
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">数据报表中心</h1>
           <p className="mt-1 text-sm text-gray-500">

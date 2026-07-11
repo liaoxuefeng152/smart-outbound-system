@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <DashboardLayout>
-      <div className="space-y-4">
+      <div className="p-6 space-y-4">
         {/* 顶部筛选栏 */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">

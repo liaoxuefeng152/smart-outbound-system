@@ -303,42 +303,40 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="lg:pl-64 flex flex-col flex-1">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 bg-white border-b shadow-sm">
+        <header className="sticky top-0 z-10 flex h-14 flex-shrink-0 bg-white border-b shadow-sm items-center justify-between px-4">
           <Button
             variant="ghost"
             size="sm"
-            className="px-4 lg:hidden"
+            className="lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-4 w-4" />
           </Button>
-          <div className="flex-1 flex items-center justify-end px-4">
-            {user && (
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 text-sm font-medium">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="hidden lg:block">
-                  <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                  <p className="text-xs text-gray-500">管理员</p>
-                </div>
+          {user && (
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 text-sm font-medium">
+                  {user.email?.charAt(0).toUpperCase()}
+                </span>
               </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowLogoutDialog(true)}
-              title="退出登录"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+              <div className="hidden lg:block">
+                <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                <p className="text-xs text-gray-500">管理员</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLogoutDialog(true)}
+                title="退出登录"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
       </div>
 
       {/* Logout dialog */}
