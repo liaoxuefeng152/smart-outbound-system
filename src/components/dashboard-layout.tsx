@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useSupabaseConfig } from "@/lib/supabase-config-inject";
+import { AuthGuard } from "@/components/auth-guard";
 import {
   LayoutDashboard,
   Phone,
@@ -124,9 +125,10 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* 左侧导航栏 */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <AuthGuard>
+      <div className="flex h-screen overflow-hidden">
+        {/* 左侧导航栏 */}
+        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* 系统标识 */}
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
@@ -242,5 +244,6 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }
