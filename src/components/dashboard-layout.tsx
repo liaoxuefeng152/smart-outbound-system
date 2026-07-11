@@ -36,47 +36,47 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: '工作台',
-    icon: <LayoutDashboard className="h-4 w-4" />,
+    icon: <LayoutDashboard className="h-5 w-5" />,
     href: '/',
   },
   {
-    title: '外呼任务管理',
-    icon: <Phone className="h-4 w-4" />,
+    title: '外呼任务',
+    icon: <Phone className="h-5 w-5" />,
     children: [
-      { title: '任务列表', icon: <ChevronRight className="h-3 w-3" />, href: '/tasks' },
-      { title: '创建外呼任务', icon: <ChevronRight className="h-3 w-3" />, href: '/tasks/create' },
+      { title: '任务列表', icon: <ChevronRight className="h-4 w-4" />, href: '/tasks' },
+      { title: '创建任务', icon: <ChevronRight className="h-4 w-4" />, href: '/tasks/create' },
     ],
   },
   {
-    title: '客户号码管理',
-    icon: <Users className="h-4 w-4" />,
+    title: '号码管理',
+    icon: <Users className="h-5 w-5" />,
     children: [
-      { title: '号码库列表', icon: <ChevronRight className="h-3 w-3" />, href: '/customers' },
-      { title: '黑名单管理', icon: <ChevronRight className="h-3 w-3" />, href: '/blacklist' },
+      { title: '号码库', icon: <ChevronRight className="h-4 w-4" />, href: '/customers' },
+      { title: '黑名单', icon: <ChevronRight className="h-4 w-4" />, href: '/blacklist' },
     ],
   },
   {
-    title: 'AI话术场景管理',
-    icon: <MessageSquare className="h-4 w-4" />,
+    title: '话术场景',
+    icon: <MessageSquare className="h-5 w-5" />,
     href: '/scenarios',
   },
   {
-    title: '通话记录与复盘',
-    icon: <Phone className="h-4 w-4" />,
+    title: '通话记录',
+    icon: <Phone className="h-5 w-5" />,
     href: '/records',
   },
   {
-    title: '数据报表中心',
-    icon: <BarChart3 className="h-4 w-4" />,
+    title: '数据报表',
+    icon: <BarChart3 className="h-5 w-5" />,
     href: '/reports',
   },
   {
     title: '系统配置',
-    icon: <Settings className="h-4 w-4" />,
+    icon: <Settings className="h-5 w-5" />,
     children: [
-      { title: '阿里云接口配置', icon: <ChevronRight className="h-3 w-3" />, href: '/config/aliyun' },
-      { title: '账号权限管理', icon: <ChevronRight className="h-3 w-3" />, href: '/config/accounts' },
-      { title: '操作日志', icon: <ChevronRight className="h-3 w-3" />, href: '/config/logs' },
+      { title: '阿里云配置', icon: <ChevronRight className="h-4 w-4" />, href: '/config/aliyun' },
+      { title: '账号管理', icon: <ChevronRight className="h-4 w-4" />, href: '/config/accounts' },
+      { title: '操作日志', icon: <ChevronRight className="h-4 w-4" />, href: '/config/logs' },
     ],
   },
 ];
@@ -157,19 +157,19 @@ export default function DashboardLayout({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          <nav className="flex-1 px-3 py-4 space-y-2">
             {navItems.map((item) => (
               <div key={item.title}>
                 {item.children ? (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start h-10 px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     onClick={() => toggleExpanded(item.title)}
                   >
-                    {item.icon}
-                    <span className="ml-2">{item.title}</span>
+                    <span className="mr-3 text-gray-500">{item.icon}</span>
+                    <span>{item.title}</span>
                     <ChevronDown
-                      className={`ml-auto h-4 w-4 ${
+                      className={`ml-auto h-4 w-4 text-gray-400 ${
                         expandedItems.includes(item.title) ? 'rotate-180' : ''
                       }`}
                     />
@@ -177,31 +177,43 @@ export default function DashboardLayout({
                 ) : (
                   <Button
                     variant={pathname === item.href ? 'secondary' : 'ghost'}
-                    className="w-full justify-start"
+                    className={`w-full justify-start h-10 px-3 text-sm font-medium ${
+                      pathname === item.href 
+                        ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                     onClick={() => {
                       if (item.href) router.push(item.href);
                       setSidebarOpen(false);
                     }}
                   >
-                    {item.icon}
-                    <span className="ml-2">{item.title}</span>
+                    <span className={`mr-3 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
+                      {item.icon}
+                    </span>
+                    <span>{item.title}</span>
                   </Button>
                 )}
                 {item.children && expandedItems.includes(item.title) && (
-                  <div className="ml-4 mt-1 space-y-1">
+                  <div className="ml-3 mt-1 space-y-1 pl-6 border-l border-gray-200">
                     {item.children.map((child) => (
                       <Button
                         key={child.title}
                         variant={pathname === child.href ? 'secondary' : 'ghost'}
                         size="sm"
-                        className="w-full justify-start"
+                        className={`w-full justify-start h-8 px-3 text-xs font-medium ${
+                          pathname === child.href 
+                            ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
                         onClick={() => {
                           if (child.href) router.push(child.href);
                           setSidebarOpen(false);
                         }}
                       >
-                        {child.icon}
-                        <span className="ml-2">{child.title}</span>
+                        <span className={`mr-2 ${pathname === child.href ? 'text-blue-600' : 'text-gray-400'}`}>
+                          {child.icon}
+                        </span>
+                        <span>{child.title}</span>
                       </Button>
                     ))}
                   </div>
@@ -223,19 +235,19 @@ export default function DashboardLayout({
               <span className="ml-2 text-lg font-semibold">智能推销外呼系统</span>
             </div>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          <nav className="flex-1 px-3 py-4 space-y-2">
             {navItems.map((item) => (
               <div key={item.title}>
                 {item.children ? (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start h-10 px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     onClick={() => toggleExpanded(item.title)}
                   >
-                    {item.icon}
-                    <span className="ml-2">{item.title}</span>
+                    <span className="mr-3 text-gray-500">{item.icon}</span>
+                    <span>{item.title}</span>
                     <ChevronDown
-                      className={`ml-auto h-4 w-4 ${
+                      className={`ml-auto h-4 w-4 text-gray-400 ${
                         expandedItems.includes(item.title) ? 'rotate-180' : ''
                       }`}
                     />
@@ -243,29 +255,41 @@ export default function DashboardLayout({
                 ) : (
                   <Button
                     variant={pathname === item.href ? 'secondary' : 'ghost'}
-                    className="w-full justify-start"
+                    className={`w-full justify-start h-10 px-3 text-sm font-medium ${
+                      pathname === item.href 
+                        ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                     onClick={() => {
                       if (item.href) router.push(item.href);
                     }}
                   >
-                    {item.icon}
-                    <span className="ml-2">{item.title}</span>
+                    <span className={`mr-3 ${pathname === item.href ? 'text-blue-600' : 'text-gray-500'}`}>
+                      {item.icon}
+                    </span>
+                    <span>{item.title}</span>
                   </Button>
                 )}
                 {item.children && expandedItems.includes(item.title) && (
-                  <div className="ml-4 mt-1 space-y-1">
+                  <div className="ml-3 mt-1 space-y-1 pl-6 border-l border-gray-200">
                     {item.children.map((child) => (
                       <Button
                         key={child.title}
                         variant={pathname === child.href ? 'secondary' : 'ghost'}
                         size="sm"
-                        className="w-full justify-start"
+                        className={`w-full justify-start h-8 px-3 text-xs font-medium ${
+                          pathname === child.href 
+                            ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' 
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
                         onClick={() => {
                           if (child.href) router.push(child.href);
                         }}
                       >
-                        {child.icon}
-                        <span className="ml-2">{child.title}</span>
+                        <span className={`mr-2 ${pathname === child.href ? 'text-blue-600' : 'text-gray-400'}`}>
+                          {child.icon}
+                        </span>
+                        <span>{child.title}</span>
                       </Button>
                     ))}
                   </div>
