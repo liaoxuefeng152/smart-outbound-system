@@ -303,7 +303,7 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="lg:pl-64 flex flex-col flex-1">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white border-b shadow-sm">
+        <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 bg-white border-b shadow-sm">
           <Button
             variant="ghost"
             size="sm"
@@ -312,18 +312,7 @@ export default function DashboardLayout({
           >
             <Menu className="h-4 w-4" />
           </Button>
-          <div className="flex-1 flex items-center px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Phone className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="hidden lg:block">
-                <p className="text-sm font-medium text-gray-900">智能推销外呼系统</p>
-                <p className="text-xs text-gray-500">高效触达 · 智能筛选 · 数据驱动</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 px-4">
+          <div className="flex-1 flex items-center justify-end px-4">
             {user && (
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
@@ -349,7 +338,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">{children}</main>
       </div>
 
       {/* Logout dialog */}
